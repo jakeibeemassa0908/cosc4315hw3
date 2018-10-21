@@ -4,14 +4,12 @@ Without recursion
 
 import sys
 
-if __name__ == '__main__':
-    import bigint
-else:
-    from . import bigint
+from . import bigint, lang
 
 
 def print_error(file, msg):
     print(file, 'infinitearithmetic: %s\n' % (msg))
+
 
 def main():
     if len(sys.argv) < 2:
@@ -40,42 +38,25 @@ def main():
         print_error(sys.stderr, '\'digitsPerNode\' is not an int')
         sys.exit(1)
 
-    output = run_infinitearithmetic(input_path, digits)
+    with open(input_path) as inputfile:
+        stripped = (l.strip() for l in inputfile)
+        exprs = (l for l in stripped if l)
+
+    results = (__safe_eval_string(e, digits) for e in exprs)
+    formatted = (__format_eval_result(pair[0], pair[1])
+                 for pair in zip(exprs, results))
+    output = '\n'.join(formatted)
+
     print(output)
 
     sys.exit(0)
 
-def run_infinitearithmetic(input_path, digits_per_node):
-    with open(input_path) as inputfile:
-        exprs = [line.strip() for line in inputfile]
-        exprs = [line for line in exprs if line]
 
-    result_pairs = [(e, eval_expression(e, digits_per_node)) for e in exprs]
-    formatted = [__format_eval_result(result, expr)
-                 for expr, result in result_pairs]
-    output = '\n'.join(formatted)
-
-    return output
-
-
-def eval_expression(expr, digits_per_node):
+def __safe_eval_string(string, digits):
     try:
-        expr = expr.strip()
-        if '*' in expr:
-            values = expr.split('*')
-            x = bigint.parse(values[0], digits_per_node)
-            y = bigint.parse(values[1], digits_per_node)
-            return (True, bigint.multiply(x, y))
-
-        elif '+' in expr:
-            values = expr.split('+')
-            x = bigint.parse(values[0], digits_per_node)
-            y = bigint.parse(values[1], digits_per_node)
-            return (True, bigint.add(x, y))
-        else:
-            return (False, ValueError('`expr` is an invalid expression'))
+        return (True, lang.eval_string(string))
     except:
-        return (False, ValueError('`expr` is an invalid expression'))
+        return (False, ValueError('Something weird'))
 
 
 def __format_eval_result(result, expr):
@@ -84,7 +65,6 @@ def __format_eval_result(result, expr):
         return '%s=%s' % (expr, bigint.tostring(ret_val))
     else:
         return 'invalid expr `%s`' % (expr)
-    
 
 
 if __name__ == '__main__':

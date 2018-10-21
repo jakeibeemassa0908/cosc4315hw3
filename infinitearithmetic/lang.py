@@ -20,6 +20,10 @@ class AstTransformer(Transformer):
         return bigint.parse(items[0], 1)
 
 
+def eval_string(string):
+    return eval_ast(string_to_ast(string))
+
+
 def string_to_ast(string):
     return __lark.parse(string)
 
