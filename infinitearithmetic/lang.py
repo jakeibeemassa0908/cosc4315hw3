@@ -1,3 +1,4 @@
+from . import bigint
 from lark import Lark, Transformer
 
 
@@ -10,13 +11,13 @@ class AstTransformer(Transformer):
         return items[0]
 
     def add(self, items):
-        return items[0] + items[1]
+        return bigint.add(items[0], items[1])
 
     def mul(self, items):
-        return items[0] * items[1]
+        return bigint.multiply(items[0], items[1])
 
     def number(self, items):
-        return int(items[0])
+        return bigint.parse(items[0], 1)
 
 
 def string_to_ast(string):
