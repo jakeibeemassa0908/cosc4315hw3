@@ -27,6 +27,18 @@ class BigInt(namedtuple('BigInt', ['nodes', 'nodesize'])):
     """
 
 
+def add(bigint1, bigint2):
+    new_len = max(len(bigint1.nodes), len(bigint2.nodes))
+    new_nodesize = bigint1.nodesize
+
+    nodes1 = bigint1.nodes + [0] * (new_len - len(bigint1.nodes))
+    nodes2 = bigint2.nodes + [0] * (new_len - len(bigint2.nodes))
+
+    added = [a + b for a, b in zip(nodes1, nodes2)]
+
+    return BigInt(_nodes_norm(added, new_nodesize), new_nodesize)
+
+
 def fromstring(string, nodesize=1):
     stripped = string.strip()
     if not stripped.isdigit():
