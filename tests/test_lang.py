@@ -1,5 +1,5 @@
 from infinitearithmetic import bigint, lang
-from infinitearithmetic.lang import lex, Token
+from infinitearithmetic.lang import (Call, Token, lex, parse)
 
 
 def test__string_to_ast__parses_add():
@@ -40,3 +40,18 @@ def test_lex():
 
     # Tracks whitespace
     assert(lex('   (') == [Token('(', 1,  3)])
+
+
+def test_parse():
+    # Parses basic expressions
+    assert(parse(lex('4')) == 4)
+    assert(parse(lex('add(4, 1)')) == Call('add', [4, 1]))
+    assert(parse(lex('multiply(4, 1)')) == Call('multiply', [4, 1]))
+
+    # Parses nested expressions
+    expected = Call('add', [Call('multiply', [1, 4]), 5])
+    assert(parse(lex('add(multiply(1, 4), 5)')) == expected)
+
+    partial = Call('add', [1, 4])
+    expected = Call('multiply', [partial, partial])
+    assert(parse(lex('multiply(add(1, 4), add(1, 4))')) == expected)
