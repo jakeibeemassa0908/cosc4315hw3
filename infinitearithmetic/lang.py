@@ -19,12 +19,12 @@ def eval_ast(ast):
     if isinstance(ast, Call):
         (name, args) = ast
         if name == 'add':
-            return eval_ast(args[0]) + eval_ast(args[1])
+            return bigint.add(eval_ast(args[0]), eval_ast(args[1]))
         elif name == 'multiply':
-            return eval_ast(args[0]) * eval_ast(args[1])
+            return bigint.multiply(eval_ast(args[0]), eval_ast(args[1]))
         else:
             raise ValueError('invalid call %s' % ast)
-    elif isinstance(ast, int):
+    elif isinstance(ast, bigint.BigInt):
         return ast
     else:
         raise ValueError('invalid ast \'%s\'' % ast)
@@ -101,7 +101,7 @@ def _consume_tok(tokens, text):
 
 
 def _parse_integer(tokens):
-    return int(tokens.pop(0).text)
+    return bigint.fromstring(tokens.pop(0).text)
 
 
 def _parse_add(tokens):

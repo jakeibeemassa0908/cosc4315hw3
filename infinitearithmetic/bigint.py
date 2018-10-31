@@ -4,35 +4,112 @@
 from functools import reduce
 from collections import namedtuple
 
-def add(bigint1, bigint2):
-    nodes1 = bigint1[2]
-    nodes2 = bigint2[2]
-    new_nodesize = bigint1[1]
 
-    nodes1 = nodes1 + [0] * (len(nodes2) - len(nodes1))
-    nodes2 = nodes2 + [0] * (len(nodes1) - len(nodes2))
+class BigInt(namedtuple('BigInt', ['nodes', 'nodesize'])):
+    """Data structure for holding arbitrarily large numbers.
+
+    Because python already supports arbitrarily large numbers, there isn't
+    a practical need for this type. However, the assignment is asking us to
+    make this data structure for learning purposes.
+
+    Attributes:
+        nodes (list of int): A list of symbolic digits for the data structure.
+            Like any number system, the nodes represent one digit of the
+            number. The maximum size of each node is determined by the BigInt's
+            `nodesize`, which constrains the node's size to [0, 10^nodesize).
+
+            The nodes are ordered from lowest value nodes to highest. For example,
+            a number could be represented in the following form:
+
+                155 #=> BigInt([5, 5, 1], 1)
+
+        nodesize (int): The max size of each node, which constrains a node to
+            the range [0, 10^nodesize].
+    """
+
+
+def add(bigint1, bigint2):
+    new_len = max(len(bigint1.nodes), len(bigint2.nodes))
+    new_nodesize = bigint1.nodesize
+
+    nodes1 = bigint1.nodes + [0] * (new_len - len(bigint1.nodes))
+    nodes2 = bigint2.nodes + [0] * (new_len - len(bigint2.nodes))
 
     added = [a + b for a, b in zip(nodes1, nodes2)]
-    normalized = __nodes_normalize(added, new_nodesize)
 
-    return new(new_nodesize, normalized)
+    return BigInt(_nodes_norm(added, new_nodesize), new_nodesize)
 
 
-def __nodes_normalize(nodes, nodesize, carry=0, acc=[]):
+def fromint(integer, nodesize=1):
+    return fromstring(str(integer), nodesize)
+
+
+def fromstring(string, nodesize=1):
+    stripped = string.strip()
+    if not stripped.isdigit():
+        raise ValueError('string is not an integer')
+
+    flipped = string[::-1]
+    chunked = _chunkevery(flipped, nodesize)
+    reverted = [n[::-1] for n in chunked]
+    nodes = [int(n) for n in reverted]
+    nodes = _nodes_norm(nodes, nodesize)
+    return BigInt(nodes, nodesize)
+
+
+def lshift(bigint, count):
+    new_nodes = ([0] * count) + bigint.nodes
+    return BigInt(new_nodes, bigint.nodesize)
+
+
+def multiply(bigint1, bigint2):
+    nodes1 = bigint1.nodes
+    nodes2 = bigint2.nodes
+    new_nodesize = bigint1.nodesize
+
+    # For each node n in bigint2, multiply it with each node m in bigint1
+    multiplied = [[n1 * n2 for n1 in nodes1] for n2 in nodes2]
+    # Create new bigints out of the new nodes.
+    biginted = [BigInt(_nodes_norm(n, new_nodesize), new_nodesize)
+                for n in multiplied]
+    # Shift the new bigints based on their node position when multiplying
+    shifted = [lshift(b, index) for index, b in enumerate(biginted)]
+    return reduce(add, shifted)
+
+
+def tostring(bigint):
+    str_nodes = [str(n) for n in bigint.nodes]
+    flipped_strs = str_nodes[::-1]
+    padded = flipped_strs[:1] + \
+        [s.zfill(bigint.nodesize) for s in flipped_strs[1:]]
+    return ''.join(padded)
+
+
+# Breaks iterables into lists of lists of size count.
+def _chunkevery(iterable, count, acc=[]):
+    if not iterable:
+        return acc
+    else:
+        return _chunkevery(iterable[count:], count, acc + [iterable[:count]])
+
+
+# Normalizes nodes to make sure each node is of appropriate size
+def _nodes_norm(nodes, nodesize, carry=0, acc=[]):
     if not nodes:
         if carry > 0:
-            return __nodes_normalize([carry], nodesize, 0, acc)
+            return _nodes_norm([carry], nodesize, 0, acc)
         else:
-            return __nodes_strip_zeroes(acc)
+            return _nodes_trim(acc)
     else:
         num, rest = nodes[0], nodes[1:]
         total = num + carry
         new_num = total % (10 ** nodesize)
         new_carry = total // (10 ** nodesize)
-        return __nodes_normalize(rest, nodesize, new_carry, acc + [new_num])
+        return _nodes_norm(rest, nodesize, new_carry, acc + [new_num])
 
 
-def __nodes_strip_zeroes(nodes):
+# Removes extra zeroes from nodes
+def _nodes_trim(nodes):
     if not nodes:
         return [0]
 
@@ -40,67 +117,4 @@ def __nodes_strip_zeroes(nodes):
     if end != 0:
         return nodes
     else:
-        return __nodes_strip_zeroes(rest)
-
-
-def fromint(integer, nodesize=1):
-    return parse(str(integer), nodesize)
-
-
-def isbigint(value):
-    return isinstance(value, tuple) and len(value) == 3 and value[0] == 'bigint'
-
-
-def multiply(bigint1, bigint2):
-    nodes1 = bigint1[2]
-    nodes2 = bigint2[2]
-    new_nodesize = bigint1[1]
-
-    # For each node n in bigint2, multiply it with each node m in bigint1
-    multiplied = [[n1 * n2 for n1 in nodes1] for n2 in nodes2]
-    # Create new bigints out of the new nodes.
-    biginted = [new(new_nodesize, n) for n in multiplied]
-    # Shift the new bigints based on their node position when multiplying
-    shifted = [lnodeshift(b, index) for index, b in enumerate(biginted)]
-    return reduce(add, shifted)
-
-
-def new(nodesize, nodes):
-    nodes = __nodes_normalize(nodes, nodesize)
-    return ('bigint', nodesize, nodes)
-
-
-def parse(string, nodesize=1):
-    string = string.strip()
-    if not string.isdigit():
-        raise ValueError('`string is not a parseable bigint.')
-
-    flipped = string[::-1]
-    chunked = __chunkevery(flipped, nodesize)
-    reverted = [n[::-1] for n in chunked]
-    nodes = [int(n) for n in reverted]
-    nodes = __nodes_normalize(nodes, nodesize)
-    return new(nodesize, nodes)
-
-
-def lnodeshift(bigint, count):
-    return new(bigint[1], ([0] * count) + bigint[2])
-
-
-def __chunkevery(iterable, count, acc=[]):
-    if not iterable:
-        return acc
-    else:
-        return __chunkevery(iterable[count:], count, acc + [iterable[:count]])
-
-
-def tostring(bigint):
-    nodes = bigint[2]
-    if not nodes:
-        return '0'
-    else:
-        nodesize = bigint[1]
-        stringified = [str(n) for n in nodes]
-        padded = [n.zfill(nodesize)
-                  for n in stringified[:-1]] + stringified[-1:]
-        return ''.join(reversed(padded))
+        return _nodes_trim(rest)

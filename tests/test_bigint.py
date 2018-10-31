@@ -1,4 +1,4 @@
-from infinitearithmetic._bigint import (BigInt, add, fromint, fromstring,
+from infinitearithmetic.bigint import (BigInt, add, fromint, fromstring,
                                         lshift, multiply, tostring)
 
 
