@@ -1,5 +1,5 @@
 from infinitearithmetic import bigint
-from infinitearithmetic.lang import (Call, Token, eval_ast, lex, parse)
+from infinitearithmetic.lang import (Call, Token, eval_ast, eval_string, lex, parse)
 
 
 def test_eval_ast():
@@ -10,6 +10,11 @@ def test_eval_ast():
     # Parses nested calls
     assert(eval_ast(parse(lex('multiply(add(5, 10), 10)'))) == 150)
     assert(eval_ast(parse(lex('multiply(5, add(multiply(2, 3), 10))'))) == 80)
+
+
+def test_eval_string():
+    # Ensure it's equivalent to making multiple calls
+    assert(eval_string('add(5, 10)') == eval_ast(parse(lex('add(5, 10)'))))
 
 
 def test_lex():

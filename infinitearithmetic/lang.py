@@ -24,7 +24,7 @@ def eval_ast(ast):
 
 
 def eval_string(string):
-    return eval_ast(parse(string))
+    return eval_ast(parse(lex(string)))
 
 
 def lex(string):
