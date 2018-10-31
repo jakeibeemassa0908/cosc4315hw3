@@ -1,4 +1,5 @@
-from infinitearithmetic._bigint import (BigInt, add, fromint, fromstring, lshift, tostring)
+from infinitearithmetic._bigint import (BigInt, add, fromint, fromstring,
+                                        lshift, multiply, tostring)
 
 
 def test_add():
@@ -45,6 +46,19 @@ def test_lshift():
     assert(lshift(fromint(123, 10), 1) == fromint(1230000000000, 10))
 
 
+def test_multiply():
+    # Multiplies nodesize 1
+    term = fromint(5, 1)
+    observed = multiply(term, term)
+    assert(observed == fromint(25, 1))
+
+    # Multiplies nodesize 10
+    term = fromint(5123098123098, 10)
+    term2 = fromint(5, 10)
+    observed = multiply(term, term2)
+    assert(observed == fromint(25615490615490, 10))
+
+
 def test_tostring():
     # Prints out zero bigint
     assert(tostring(fromint(0, 1)) == '0')
@@ -53,4 +67,5 @@ def test_tostring():
     assert(tostring(fromint(200, 1)) == '200')
 
     # Prints out large number bigint
-    assert(tostring(fromint(139410928029381029300, 10)) == '139410928029381029300')
+    assert(tostring(fromint(139410928029381029300, 10))
+           == '139410928029381029300')

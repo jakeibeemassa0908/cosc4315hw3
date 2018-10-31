@@ -1,6 +1,7 @@
 """A set of functions for working with bigints.
 """
 
+from functools import reduce
 from collections import namedtuple
 
 
@@ -59,6 +60,21 @@ def fromstring(string, nodesize=1):
 def lshift(bigint, count):
     new_nodes = ([0] * count) + bigint.nodes
     return BigInt(new_nodes, bigint.nodesize)
+
+
+def multiply(bigint1, bigint2):
+    nodes1 = bigint1.nodes
+    nodes2 = bigint2.nodes
+    new_nodesize = bigint1.nodesize
+
+    # For each node n in bigint2, multiply it with each node m in bigint1
+    multiplied = [[n1 * n2 for n1 in nodes1] for n2 in nodes2]
+    # Create new bigints out of the new nodes.
+    biginted = [BigInt(_nodes_norm(n, new_nodesize), new_nodesize)
+                for n in multiplied]
+    # Shift the new bigints based on their node position when multiplying
+    shifted = [lshift(b, index) for index, b in enumerate(biginted)]
+    return reduce(add, shifted)
 
 
 def tostring(bigint):
