@@ -39,6 +39,10 @@ def add(bigint1, bigint2):
     return BigInt(_nodes_norm(added, new_nodesize), new_nodesize)
 
 
+def fromint(integer, nodesize=1):
+    return fromstring(str(integer), nodesize)
+
+
 def fromstring(string, nodesize=1):
     stripped = string.strip()
     if not stripped.isdigit():
@@ -50,6 +54,14 @@ def fromstring(string, nodesize=1):
     nodes = [int(n) for n in reverted]
     nodes = _nodes_norm(nodes, nodesize)
     return BigInt(nodes, nodesize)
+
+
+def tostring(bigint):
+    str_nodes = [str(n) for n in bigint.nodes]
+    flipped_strs = str_nodes[::-1]
+    padded = flipped_strs[:1] + \
+        [s.zfill(bigint.nodesize) for s in flipped_strs[1:]]
+    return ''.join(padded)
 
 
 # Breaks iterables into lists of lists of size count.

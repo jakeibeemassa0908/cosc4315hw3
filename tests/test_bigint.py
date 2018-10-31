@@ -1,4 +1,4 @@
-from infinitearithmetic._bigint import (BigInt, add, fromstring)
+from infinitearithmetic._bigint import (BigInt, add, fromint, fromstring, tostring)
 
 
 def test_add():
@@ -18,6 +18,11 @@ def test_add():
     assert(observed == BigInt([2469135782, 1150], 10))
 
 
+def test_fromint():
+    # Ensures expression equality
+    assert(fromint(100, 1) == fromstring('100', 1))
+
+
 def test_fromstring():
     # Converts with nodesize of 1
     assert(fromstring('500', 1) == BigInt([0, 0, 5], 1))
@@ -30,3 +35,14 @@ def test_fromstring():
 
     # Converts with nodesize of 10
     assert(fromstring('59832345678901', 10) == BigInt([2345678901, 5983], 10))
+
+
+def test_tostring():
+    # Prints out zero bigint
+    assert(tostring(fromint(0, 1)) == '0')
+
+    # Prints out non zero bigint
+    assert(tostring(fromint(200, 1)) == '200')
+
+    # Prints out large number bigint
+    assert(tostring(fromint(139410928029381029300, 10)) == '139410928029381029300')
