@@ -56,6 +56,11 @@ def fromstring(string, nodesize=1):
     return BigInt(nodes, nodesize)
 
 
+def lshift(bigint, count):
+    new_nodes = ([0] * count) + bigint.nodes
+    return BigInt(new_nodes, bigint.nodesize)
+
+
 def tostring(bigint):
     str_nodes = [str(n) for n in bigint.nodes]
     flipped_strs = str_nodes[::-1]

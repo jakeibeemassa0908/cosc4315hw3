@@ -1,4 +1,4 @@
-from infinitearithmetic._bigint import (BigInt, add, fromint, fromstring, tostring)
+from infinitearithmetic._bigint import (BigInt, add, fromint, fromstring, lshift, tostring)
 
 
 def test_add():
@@ -35,6 +35,14 @@ def test_fromstring():
 
     # Converts with nodesize of 10
     assert(fromstring('59832345678901', 10) == BigInt([2345678901, 5983], 10))
+
+
+def test_lshift():
+    # Shifts nodesize 1 to the left
+    assert(lshift(fromint(123, 1), 2) == fromint(12300, 1))
+
+    # Shifts nodesize 10 to the left
+    assert(lshift(fromint(123, 10), 1) == fromint(1230000000000, 10))
 
 
 def test_tostring():
