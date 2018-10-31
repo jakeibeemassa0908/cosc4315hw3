@@ -25,3 +25,51 @@ class BigInt(namedtuple('BigInt', ['nodes', 'nodesize'])):
         nodesize (int): The max size of each node, which constrains a node to
             the range [0, 10^nodesize].
     """
+
+
+def fromstring(string, nodesize=1):
+    stripped = string.strip()
+    if not stripped.isdigit():
+        raise ValueError('string is not an integer')
+
+    flipped = string[::-1]
+    chunked = _chunkevery(flipped, nodesize)
+    reverted = [n[::-1] for n in chunked]
+    nodes = [int(n) for n in reverted]
+    nodes = _nodes_norm(nodes, nodesize)
+    return BigInt(nodes, nodesize)
+
+
+# Breaks iterables into lists of lists of size count.
+def _chunkevery(iterable, count, acc=[]):
+    if not iterable:
+        return acc
+    else:
+        return _chunkevery(iterable[count:], count, acc + [iterable[:count]])
+
+
+# Normalizes nodes to make sure each node is of appropriate size
+def _nodes_norm(nodes, nodesize, carry=0, acc=[]):
+    if not nodes:
+        if carry > 0:
+            return _nodes_norm([carry], nodesize, 0, acc)
+        else:
+            return _nodes_trim(acc)
+    else:
+        num, rest = nodes[0], nodes[1:]
+        total = num + carry
+        new_num = total % (10 ** nodesize)
+        new_carry = total // (10 ** nodesize)
+        return _nodes_norm(rest, nodesize, new_carry, acc + [new_num])
+
+
+# Removes extra zeroes from nodes
+def _nodes_trim(nodes):
+    if not nodes:
+        return [0]
+
+    end, rest = nodes[-1], nodes[:-1]
+    if end != 0:
+        return nodes
+    else:
+        return _nodes_trim(rest)
