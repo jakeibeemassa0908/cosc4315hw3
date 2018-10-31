@@ -4,67 +4,67 @@ Without recursion
 
 import sys
 
-from . import bigint, lang
-
-
-def print_error(file, msg):
-    print(file, 'infinitearithmetic: %s\n' % (msg))
+from . import bigint
+from .lang import eval_string
 
 
 def main():
     if len(sys.argv) < 2:
-        print_error(sys.stderr, 'invalid arg count')
+        _print_error(sys.stderr, 'invalid arg count')
         sys.exit(1)
 
     try:
         assigns = [s.strip() for s in sys.argv[1].split(';')]
         args = dict([a.split('=') for a in assigns])
     except:
-        print_error(sys.stderr, 'invalid args format')
+        _print_error(sys.stderr, 'invalid args format')
         sys.exit(1)
 
     try:
         input_path = args['input']
     except KeyError:
-        print_error(sys.stderr, '\'input\' is a required arg')
+        _print_error(sys.stderr, '\'input\' is a required arg')
         sys.exit(1)
 
     try:
         digits = int(args['digitsPerNode'])
     except KeyError:
-        print_error(sys.stderr, '\'digitsPerNode\' is a required arg')
+        _print_error(sys.stderr, '\'digitsPerNode\' is a required arg')
         sys.exit(1)
     except TypeError:
-        print_error(sys.stderr, '\'digitsPerNode\' is not an int')
+        _print_error(sys.stderr, '\'digitsPerNode\' is not an int')
         sys.exit(1)
 
     with open(input_path) as inputfile:
         stripped = (l.strip() for l in inputfile)
         exprs = (l for l in stripped if l)
 
-    results = (__safe_eval_string(e, digits) for e in exprs)
-    formatted = (__format_eval_result(pair[0], pair[1])
-                 for pair in zip(exprs, results))
-    output = '\n'.join(formatted)
+    equations = [(e, _safe_call(eval_string, e)) for e in exprs]
+    str_results = [_fmt_result(e[0], e[1]) for e in equations]
+    output = '\n'.join(str_results)
 
     print(output)
 
     sys.exit(0)
 
 
-def __safe_eval_string(string, digits):
-    try:
-        return (True, lang.eval_string(string))
-    except:
-        return (False, ValueError('Something weird'))
-
-
-def __format_eval_result(result, expr):
-    (successful, ret_val) = result
-    if successful:
-        return '%s=%s' % (expr, bigint.tostring(ret_val))
+def _fmt_result(result, expr):
+    success, val = result
+    if success:
+        return '%s = %s' % (expr, bigint.tostring(val))
     else:
-        return 'invalid expr `%s`' % (expr)
+        return '%s = invalid expression' % (expr)
+
+
+def _print_error(file, msg):
+    print('infinitearithmetic: %s' % (msg), file=file)
+
+
+def _safe_call(fun, *args):
+    try:
+        return (True, fun(*args))
+    except BaseException as e:
+        return (False, e)
 
 
 if __name__ == '__main__':
