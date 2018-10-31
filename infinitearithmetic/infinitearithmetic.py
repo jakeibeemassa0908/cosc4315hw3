@@ -11,20 +11,20 @@ from .lang import eval_string
 def main():
     if len(sys.argv) < 2:
         _print_error(sys.stderr, 'invalid arg count')
-        sys.exit(1)
+        return 1
 
     try:
         assigns = [s.strip() for s in sys.argv[1].split(';')]
         args = dict([a.split('=') for a in assigns])
     except:
         _print_error(sys.stderr, 'invalid args format')
-        sys.exit(1)
+        return 1
 
     try:
         input_path = args['input']
     except KeyError:
         _print_error(sys.stderr, '\'input\' is a required arg')
-        sys.exit(1)
+        return 1
 
     try:
         digits = int(args['digitsPerNode'])
@@ -45,7 +45,7 @@ def main():
 
     print(output)
 
-    sys.exit(0)
+    return 0
 
 
 def _fmt_result(result, expr):
@@ -68,4 +68,4 @@ def _safe_call(fun, *args):
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
