@@ -1,11 +1,18 @@
+"""Functions for evaluating the infinitearithmetic language.
+"""
+
 import re
 from collections import namedtuple
 
 from . import bigint
 
-Token = namedtuple('Token', ['text', 'lineno', 'offset'])
 
-Call = namedtuple('Call', ['name', 'args'])
+class Token(namedtuple('Token', ['text', 'lineno', 'offset'])):
+    """Represents an important token in the parsing process."""
+
+
+class Call(namedtuple('Call', ['name', 'args'])):
+    """Represents a function call in an AST tree."""
 
 
 def eval_ast(ast):
