@@ -6,7 +6,6 @@ authors = ["Justin <jbtcao@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "*"
-lark-parser = "^0.6.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"

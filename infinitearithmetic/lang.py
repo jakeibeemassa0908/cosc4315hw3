@@ -2,7 +2,6 @@ import re
 from collections import namedtuple
 
 from . import bigint
-from lark import Lark, Transformer
 
 Token = namedtuple('Token', ['text', 'lineno', 'offset'])
 
@@ -10,25 +9,22 @@ Call = namedtuple('Call', ['name', 'args'])
 
 
 def eval_ast(ast):
-    return AstTransformer().transform(ast)
-
-
-class AstTransformer(Transformer):
-    def expression(self, items):
-        return items[0]
-
-    def add(self, items):
-        return bigint.add(items[0], items[1])
-
-    def mul(self, items):
-        return bigint.multiply(items[0], items[1])
-
-    def number(self, items):
-        return bigint.parse(items[0], 1)
+    if isinstance(ast, Call):
+        (name, args) = ast
+        if name == 'add':
+            return eval_ast(args[0]) + eval_ast(args[1])
+        elif name == 'multiply':
+            return eval_ast(args[0]) * eval_ast(args[1])
+        else:
+            raise ValueError('invalid call %s' % ast)
+    elif isinstance(ast, int):
+        return ast
+    else:
+        raise ValueError('invalid ast \'%s\'' % ast)
 
 
 def eval_string(string):
-    return eval_ast(string_to_ast(string))
+    return eval_ast(parse(string))
 
 
 def lex(string):
@@ -142,26 +138,3 @@ def _parse_expression(tokens):
     else:
         raise SyntaxError('invalid syntax',
                           (None, tok.lineno, tok.offset, tok.text))
-
-
-def string_to_ast(string):
-    return __lark.parse(string)
-
-
-__grammar = '''
-expression: add
-          | mul
-          | number
-
-add: "add" "(" expression "," expression ")"
-
-mul: "multiply" "(" expression "," expression ")"
-
-number: NUMBER
-
-%import common.NUMBER
-%import common.WS
-%ignore WS
-'''
-
-__lark = Lark(__grammar, start='expression')
