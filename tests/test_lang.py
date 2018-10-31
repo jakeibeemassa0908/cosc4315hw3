@@ -1,5 +1,6 @@
 from infinitearithmetic import bigint
-from infinitearithmetic.lang import (Call, Token, eval_ast, eval_string, lex, parse)
+from infinitearithmetic.lang import (Call, Token, eval_ast, eval_string,
+                                     string_to_ast, lex, parse)
 
 
 def test_eval_ast():
@@ -52,3 +53,8 @@ def test_parse():
     partial = Call('add', [1, 4])
     expected = Call('multiply', [partial, partial])
     assert(parse(lex('multiply(add(1, 4), add(1, 4))')) == expected)
+
+
+def test_string_to_ast():
+    # Ensure it's equivalent to making multiple calls
+    assert(string_to_ast('add(1, 2)') == parse(lex('add(1, 2)')))

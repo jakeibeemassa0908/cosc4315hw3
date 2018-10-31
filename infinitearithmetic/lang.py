@@ -138,3 +138,7 @@ def _parse_expression(tokens):
     else:
         raise SyntaxError('invalid syntax',
                           (None, tok.lineno, tok.offset, tok.text))
+
+
+def string_to_ast(string):
+    return parse(lex(string))
