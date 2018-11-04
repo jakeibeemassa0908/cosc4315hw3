@@ -16,6 +16,17 @@ class Call(namedtuple('Call', ['name', 'args'])):
 
 
 def eval_ast(ast):
+    """Evaluates an AST.
+
+    Preconditions: 
+        - `ast` is an AST, which is either a `Call` or a `BigInt`.
+        - If `ast` is a `Call`, the call's `name` must be either `add` or `multiply`.
+
+    Postconditions:
+        - Returns a `BigInt`.
+        - If any of the preconditions fail, raises a `ValueError`.
+    """
+
     if isinstance(ast, Call):
         (name, args) = ast
         if name == 'add':
@@ -31,13 +42,37 @@ def eval_ast(ast):
 
 
 def eval_string(string):
+    """Evaluates a string.
+
+    Preconditions:
+        - `string` is a `str`.
+        - `string` is in proper infinitearithmetic format.
+
+    Postconditions:
+        - Returns a `BigInt`.
+        - If any of the preconditions fail, raises a `SyntaxError`.
+    """
+
     return eval_ast(parse(lex(string)))
 
 
 def lex(string):
+    """Lexes a string into `Token`s.
+
+    Preconditions:
+        - `string` is a `str`.
+        - `string` is in proper infinitearithmetic grammar.
+
+    Postconditions:
+        - Returns a list of `Token`s.
+        - If `string` is not infinitearithmetic grammar, then a `SyntaxError`
+          is raised.
+    """
+
     return _do_lex(string, None, 1, 0, [])
 
 
+# Internal usage
 def _do_lex(string, filename, lineno, offset, acc):
     if not string:
         return acc
@@ -64,6 +99,7 @@ def _do_lex(string, filename, lineno, offset, acc):
     return _do_lex(new_str, filename, lineno, new_str_offset, new_acc)
 
 
+# Internal usage
 def _build_regex(pat):
     return re.compile('^(%s)' % pat)
 
@@ -79,6 +115,18 @@ _token_regexes = [
 
 
 def parse(tokens):
+    """Evaluates a list of `Token`s into an ast.
+
+    Preconditions:
+        - `tokens` is a list of `Token`s.
+        - `tokens` is in proper infinitearithmetic format.
+
+    Postconditions:
+        - Returns a `Call` or `BigInt`.
+        - If `tokens` is not in proper infinitearithmetic format, raises a
+          `SyntaxError`.
+    """
+
     work_toks = list(tokens)
     result = _parse_expression(work_toks)
 
@@ -90,6 +138,7 @@ def parse(tokens):
     return result
 
 
+# Internal usage
 def _consume_tok(tokens, text):
     tok = tokens[0]
     if not re.match('^%s' % text, tok.text):
@@ -100,10 +149,12 @@ def _consume_tok(tokens, text):
     tokens.pop(0)
 
 
+# Internal usage
 def _parse_integer(tokens):
     return bigint.fromstring(tokens.pop(0).text)
 
 
+# Internal usage
 def _parse_add(tokens):
     _consume_tok(tokens, 'add')
     _consume_tok(tokens, '\\(')
@@ -119,6 +170,7 @@ def _parse_add(tokens):
     return Call('add', [a, b])
 
 
+# Internal usage
 def _parse_mul(tokens):
     _consume_tok(tokens, 'multiply')
     _consume_tok(tokens, '\\(')
@@ -134,6 +186,7 @@ def _parse_mul(tokens):
     return Call('multiply', [a, b])
 
 
+# Internal usage
 def _parse_expression(tokens):
     tok = tokens[0]
     if tok.text == 'add':
@@ -148,4 +201,13 @@ def _parse_expression(tokens):
 
 
 def string_to_ast(string):
+    """Converts `string` to an ast.
+
+    Preconditions:
+        - `string` is a `str` of proper infinitearithmetic format.
+
+    Postconditions:
+        - Returns a `Call` or `BigInt`.
+        - If any of the preconditions fail, a `SyntaxError` is raised.
+    """
     return parse(lex(string))
