@@ -39,16 +39,16 @@ def main():
         stripped = (l.strip() for l in inputfile)
         exprs = (l for l in stripped if l)
 
-    equations = [(e, _safe_call(eval_string, e)) for e in exprs]
-    str_results = [_fmt_result(e[0], e[1]) for e in equations]
-    output = '\n'.join(str_results)
+        equations = [(e, _safe_call(eval_string, e)) for e in exprs]
+        str_results = [_fmt_result(e[0], e[1]) for e in equations]
+        output = '\n'.join(str_results)
 
-    print(output)
+        print(output)
 
     return 0
 
 
-def _fmt_result(result, expr):
+def _fmt_result(expr, result):
     success, val = result
     if success:
         return '%s = %s' % (expr, bigint.tostring(val))
