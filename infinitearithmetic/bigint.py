@@ -13,7 +13,7 @@ class BigInt(namedtuple('BigInt', ['nodes', 'nodesize'])):
     make this data structure for learning purposes.
 
     Attributes:
-        nodes (list of int): A list of symbolic digits for the data structure.
+        nodes (List[int]): A list of symbolic digits for the data structure.
             Like any number system, the nodes represent one digit of the
             number. The maximum size of each node is determined by the BigInt's
             `nodesize`, which constrains the node's size to [0, 10^nodesize).
@@ -29,6 +29,20 @@ class BigInt(namedtuple('BigInt', ['nodes', 'nodesize'])):
 
 
 def add(bigint1, bigint2):
+    """Sums two `BigInt`s.
+    
+    Preconditions:
+        - `bigint1` and `bigint2` are a `BigInt`
+        - `bigint1` and `bigint2` have the same nodesize.
+
+    Postconditions:
+        - Returns a `BigInt` contains the summed result.
+        - If the nodesizes are different, raises a `ValueError`.
+    """
+
+    if bigint1.nodesize != bigint2.nodesize:
+        raise ValueError('nodesizes do not match')
+
     new_len = max(len(bigint1.nodes), len(bigint2.nodes))
     new_nodesize = bigint1.nodesize
 
@@ -41,10 +55,31 @@ def add(bigint1, bigint2):
 
 
 def fromint(integer, nodesize=1):
+    """Converts an `int` into a `BigInt`.
+    
+    Preconditions:
+        - `integer` is an `int`.
+        - `nodesize` is an `int`.
+
+    Postconditions:
+        - Returns a `BigInt`.
+    """
+
     return fromstring(str(integer), nodesize)
 
 
 def fromstring(string, nodesize=1):
+    """Converts an `str` into a `BigInt`.
+    
+    Preconditions:
+        - `string` is a `str` of digits.
+        - `nodesize` is an `int`.
+
+    Postconditions:
+        - Returns a `BigInt`.
+        - If `string` is not pure digits, raises a `ValueError`.
+    """
+
     stripped = string.strip()
     if not stripped.isdigit():
         raise ValueError('string is not an integer')
@@ -58,11 +93,38 @@ def fromstring(string, nodesize=1):
 
 
 def lshift(bigint, count):
+    """Shifts the number's nodes `count` times to the left.
+    
+    This is effectively the equivalent of a bitshift left, but shifts by nodes
+    instead of bits.
+    
+    Preconditions:
+        - `bigint` is a `BigInt`.
+        - `count` is an `int`.
+
+    Postconditions:
+        - Returns a `BigInt` shifted to the left `count` times.
+    """
+
     new_nodes = ([0] * count) + bigint.nodes
     return BigInt(new_nodes, bigint.nodesize)
 
 
 def multiply(bigint1, bigint2):
+    """Multiplies two `BigInt`s.
+    
+    Preconditions:
+        - `bigint1` and `bigint2` are a `BigInt`
+        - `bigint1` and `bigint2` have the same nodesize.
+
+    Postconditions:
+        - Returns a `BigInt` contains the multiplied result.
+        - If the nodesizes are different, raises a `ValueError`.
+    """
+
+    if bigint1.nodesize != bigint2.nodesize:
+        raise ValueError('nodesizes do not match')
+
     nodes1 = bigint1.nodes
     nodes2 = bigint2.nodes
     new_nodesize = bigint1.nodesize
@@ -78,6 +140,15 @@ def multiply(bigint1, bigint2):
 
 
 def tostring(bigint):
+    """Converts a `BigInt` to a `str`.
+    
+    Preconditions:
+        - `bigint` is a `BigInt`.
+
+    Postconditions:
+        - Returns a `str` representation of `bigint`.
+    """
+
     str_nodes = [str(n) for n in bigint.nodes]
     flipped_strs = str_nodes[::-1]
     padded = flipped_strs[:1] + \
