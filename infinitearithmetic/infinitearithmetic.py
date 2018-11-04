@@ -27,7 +27,7 @@ def main():
         return 1
 
     try:
-        digits = int(args['digitsPerNode'])
+        nodesize = int(args['digitsPerNode'])
     except KeyError:
         _print_error(sys.stderr, '\'digitsPerNode\' is a required arg')
         sys.exit(1)
@@ -39,7 +39,7 @@ def main():
         stripped = (l.strip() for l in inputfile)
         exprs = (l for l in stripped if l)
 
-        equations = [(e, _safe_call(eval_string, e)) for e in exprs]
+        equations = [(e, _safe_call(eval_string, e, nodesize)) for e in exprs]
         str_results = [_fmt_result(e[0], e[1]) for e in equations]
         output = '\n'.join(str_results)
 

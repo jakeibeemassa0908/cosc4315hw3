@@ -41,7 +41,7 @@ def eval_ast(ast):
         raise ValueError('invalid ast \'%s\'' % ast)
 
 
-def eval_string(string):
+def eval_string(string, nodesize=1):
     """Evaluates a string.
 
     Preconditions:
@@ -53,7 +53,7 @@ def eval_string(string):
         - If any of the preconditions fail, raises a `SyntaxError`.
     """
 
-    return eval_ast(parse(lex(string)))
+    return eval_ast(string_to_ast(string, nodesize))
 
 
 def lex(string):
@@ -114,7 +114,7 @@ _token_regexes = [
 ]
 
 
-def parse(tokens):
+def parse(tokens, nodesize=1):
     """Evaluates a list of `Token`s into an ast.
 
     Preconditions:
@@ -128,7 +128,7 @@ def parse(tokens):
     """
 
     work_toks = list(tokens)
-    result = _parse_expression(work_toks)
+    result = _parse_expression(work_toks, nodesize)
 
     if work_toks:
         tok = work_toks[0]
@@ -150,20 +150,20 @@ def _consume_tok(tokens, text):
 
 
 # Internal usage
-def _parse_integer(tokens):
-    return bigint.fromstring(tokens.pop(0).text)
+def _parse_integer(tokens, nodesize):
+    return bigint.fromstring(tokens.pop(0).text, nodesize)
 
 
 # Internal usage
-def _parse_add(tokens):
+def _parse_add(tokens, nodesize):
     _consume_tok(tokens, 'add')
     _consume_tok(tokens, '\\(')
 
-    a = _parse_expression(tokens)
+    a = _parse_expression(tokens, nodesize)
 
     _consume_tok(tokens, ',')
 
-    b = _parse_expression(tokens)
+    b = _parse_expression(tokens, nodesize)
 
     _consume_tok(tokens, '\\)')
 
@@ -171,15 +171,15 @@ def _parse_add(tokens):
 
 
 # Internal usage
-def _parse_mul(tokens):
+def _parse_mul(tokens, nodesize):
     _consume_tok(tokens, 'multiply')
     _consume_tok(tokens, '\\(')
 
-    a = _parse_expression(tokens)
+    a = _parse_expression(tokens, nodesize)
 
     _consume_tok(tokens, ',')
 
-    b = _parse_expression(tokens)
+    b = _parse_expression(tokens, nodesize)
 
     _consume_tok(tokens, '\\)')
 
@@ -187,20 +187,20 @@ def _parse_mul(tokens):
 
 
 # Internal usage
-def _parse_expression(tokens):
+def _parse_expression(tokens, nodesize):
     tok = tokens[0]
     if tok.text == 'add':
-        return _parse_add(tokens)
+        return _parse_add(tokens, nodesize)
     elif tok.text == 'multiply':
-        return _parse_mul(tokens)
+        return _parse_mul(tokens, nodesize)
     elif re.match('[\\d]+', tok.text):
-        return _parse_integer(tokens)
+        return _parse_integer(tokens, nodesize)
     else:
         raise SyntaxError('invalid syntax',
                           (None, tok.lineno, tok.offset, tok.text))
 
 
-def string_to_ast(string):
+def string_to_ast(string, nodesize=1):
     """Converts `string` to an ast.
 
     Preconditions:
@@ -210,4 +210,4 @@ def string_to_ast(string):
         - Returns a `Call` or `BigInt`.
         - If any of the preconditions fail, a `SyntaxError` is raised.
     """
-    return parse(lex(string))
+    return parse(lex(string), nodesize)

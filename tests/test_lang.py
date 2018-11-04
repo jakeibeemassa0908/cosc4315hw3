@@ -18,6 +18,9 @@ def test_eval_string():
     # Ensure it's equivalent to making multiple calls
     assert(eval_string('add(5, 10)') == eval_ast(parse(lex('add(5, 10)'))))
 
+    # Ensure nodesizes are adjusted
+    assert(eval_string('add(5, 10)', 5) == bigint.fromint(15, 5))
+
 
 def test_lex():
     # Recognizes standard tokens
@@ -58,7 +61,13 @@ def test_parse():
     expected = Call('multiply', [partial, partial])
     assert(parse(lex('multiply(add(1, 4), add(1, 4))')) == expected)
 
+    # Parses with nodesize
+    assert(parse(lex('5'), 10) == bigint.fromint(5, 10))
+
 
 def test_string_to_ast():
     # Ensure it's equivalent to making multiple calls
     assert(string_to_ast('add(1, 2)') == parse(lex('add(1, 2)')))
+
+    # Ensure nodesizes are propagated
+    assert(string_to_ast('add(1, 2)', 8) == parse(lex('add(1, 2)'), 8))
